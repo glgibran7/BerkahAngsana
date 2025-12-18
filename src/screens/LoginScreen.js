@@ -19,8 +19,7 @@ import { useGlobal } from '../context/GlobalContext';
 import Api from '../utils/Api';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-import logoLight from '../image/logo_berkah_large.png';
-import logoDark from '../image/logo_berkah_large.png';
+import logo from '../image/logo_berkah_large.png';
 
 const { width } = Dimensions.get('window');
 
@@ -144,12 +143,12 @@ const LoginScreen = () => {
         contentContainerStyle={[styles.container, themeStyles.container]}
       >
         <Animated.Image
-          source={isDark ? logoDark : logoLight}
+          source={logo}
           style={[
             styles.logo,
             { opacity: fadeAnim, width: width * 0.9, height: width * 0.5 },
           ]}
-          resizeMode="cover"
+          resizeMode="contain"
         />
 
         {/* Input username */}
@@ -195,7 +194,7 @@ const LoginScreen = () => {
           <Text style={[styles.rememberMeText, themeStyles.text]}>
             Ingat Saya
           </Text>
-          <View style={styles.forgotPasswordContainer}>
+          {/* <View style={styles.forgotPasswordContainer}>
             <TouchableOpacity
               onPress={() =>
                 showToast(
@@ -207,7 +206,7 @@ const LoginScreen = () => {
             >
               <Text style={styles.forgotPasswordText}>Lupa Password?</Text>
             </TouchableOpacity>
-          </View>
+          </View> */}
         </View>
 
         {/* Tombol Login */}
@@ -217,7 +216,7 @@ const LoginScreen = () => {
           activeOpacity={0.8}
         >
           <LinearGradient
-            colors={['#00BFFF', '#063665ff']}
+            colors={['#b00020', '#d32f2f']}
             style={styles.loginButton}
           >
             <Text style={styles.loginButtonText}>Login</Text>
@@ -225,7 +224,7 @@ const LoginScreen = () => {
         </TouchableOpacity>
 
         {/* Register */}
-        <View style={styles.registerContainer}>
+        {/* <View style={styles.registerContainer}>
           <Text style={[styles.registerText, themeStyles.text]}>
             Belum punya akun?{' '}
           </Text>
@@ -234,7 +233,7 @@ const LoginScreen = () => {
           >
             <Text style={styles.registerLink}>Register</Text>
           </TouchableOpacity>
-        </View>
+        </View> */}
       </ScrollView>
     </View>
   );
