@@ -316,12 +316,10 @@ const HomeScreen = () => {
             <Text style={styles.presensiDate}>
               {today.dayName}, {today.fullDate}
             </Text>
-            <TouchableOpacity style={styles.deleteRow}>
-              <Ionicons name="trash" size={16} color={theme.danger} />
-              <Text style={[styles.deleteText, { color: theme.danger }]}>
-                Hapus
-              </Text>
-            </TouchableOpacity>
+
+            <Text style={[styles.presensiLabel, { color: theme.textPrimary }]}>
+              Jam Keluar:
+            </Text>
           </View>
 
           <View style={styles.presensiBody}>
@@ -330,12 +328,21 @@ const HomeScreen = () => {
               {loadingAbsensi
                 ? 'Memuat...'
                 : absensi?.jam_keluar
-                ? `${absensi.lokasi_keluar || '-'} - ${absensi.jam_keluar}`
+                ? `${absensi.lokasi_keluar || '-'}`
                 : 'Belum absensi keluar'}
             </Text>
             <Text style={[styles.presensiTime, { color: theme.textPrimary }]}>
               {loadingAbsensi ? '--:--' : absensi?.jam_keluar ?? '--:--'}
             </Text>
+          </View>
+
+          <View style={styles.presensiFooter}>
+            <TouchableOpacity style={styles.deleteRow}>
+              <Ionicons name="trash" size={16} color={theme.danger} />
+              <Text style={[styles.deleteText, { color: theme.danger }]}>
+                Hapus
+              </Text>
+            </TouchableOpacity>
           </View>
         </View>
       </ScrollView>
@@ -495,5 +502,9 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontWeight: '600',
     marginLeft: 4,
+  },
+  presensiFooter: {
+    marginTop: 4,
+    alignItems: 'flex-end',
   },
 });
