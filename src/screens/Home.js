@@ -14,11 +14,38 @@ import Ionicons from '@react-native-vector-icons/ionicons';
 import { useGlobal } from '../context/GlobalContext';
 import Header from '../components/Header';
 
+const getTodayDate = () => {
+  const now = new Date();
+
+  const days = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
+
+  const months = [
+    'Januari',
+    'Februari',
+    'Maret',
+    'April',
+    'Mei',
+    'Juni',
+    'Juli',
+    'Agustus',
+    'September',
+    'Oktober',
+    'November',
+    'Desember',
+  ];
+
+  return {
+    dayName: days[now.getDay()],
+    fullDate: `${now.getDate()} ${months[now.getMonth()]} ${now.getFullYear()}`,
+  };
+};
+
 const HomeScreen = () => {
   const colorScheme = useColorScheme();
   const isDark = colorScheme === 'dark';
   const navigation = useNavigation();
   const { setUser, showToast } = useGlobal();
+  const today = getTodayDate();
 
   const theme = {
     background: isDark ? '#0E0E0E' : '#F6F6F6',
@@ -33,26 +60,6 @@ const HomeScreen = () => {
     danger: '#B71C1C',
   };
 
-  const handleLogout = async () => {
-    Alert.alert('Logout', 'Yakin ingin keluar?', [
-      { text: 'Batal', style: 'cancel' },
-      {
-        text: 'Logout',
-        style: 'destructive',
-        onPress: async () => {
-          await AsyncStorage.removeItem('token');
-          await AsyncStorage.removeItem('user');
-          setUser(null);
-          showToast('Logout berhasil', 'Sampai jumpa', 'success');
-          navigation.reset({
-            index: 0,
-            routes: [{ name: 'Login' }],
-          });
-        },
-      },
-    ]);
-  };
-
   return (
     <>
       <Header showMessage={false} showBack={false} />
@@ -61,7 +68,7 @@ const HomeScreen = () => {
         style={[styles.container, { backgroundColor: theme.background }]}
         showsVerticalScrollIndicator={false}
       >
-        {/* ===== INFO + REKAP (TETAP ADA) ===== */}
+        {/* INFO + REKAP*/}
         <View style={[styles.infoCard, { backgroundColor: theme.card }]}>
           <View style={styles.rowBetween}>
             <View>
@@ -75,10 +82,10 @@ const HomeScreen = () => {
 
             <View style={{ alignItems: 'flex-end' }}>
               <Text style={[styles.subText, { color: theme.textSecondary }]}>
-                Kamis,
+                {today.dayName},
               </Text>
               <Text style={[styles.dateText, { color: theme.textPrimary }]}>
-                3 Februari 2022
+                {today.fullDate}
               </Text>
             </View>
           </View>
@@ -86,7 +93,8 @@ const HomeScreen = () => {
           <View style={[styles.divider, { backgroundColor: theme.divider }]} />
 
           <Text style={[styles.rekapTitle, { color: theme.textPrimary }]}>
-            Rekap Absensi Bulan Ini
+            Rekap Absensi{' '}
+            {`(${new Date().toLocaleString('id-ID', { month: 'long' })})`}
           </Text>
 
           <View style={styles.rekapRow}>
@@ -100,7 +108,7 @@ const HomeScreen = () => {
             </View>
 
             <View style={styles.rekapItem}>
-              <Text style={[styles.rekapValue, { color: theme.info }]}>
+              <Text style={[styles.rekapValue, { color: theme.warning }]}>
                 1 Hari
               </Text>
               <Text style={[styles.rekapLabel, { color: theme.textSecondary }]}>
@@ -171,7 +179,9 @@ const HomeScreen = () => {
         {/* MASUK */}
         <View style={[styles.presensiCard, { backgroundColor: theme.card }]}>
           <View style={styles.presensiHeader}>
-            <Text style={styles.presensiDate}>Jumat, 19 Desember 2025</Text>
+            <Text style={styles.presensiDate}>
+              {today.dayName}, {today.fullDate}
+            </Text>
             <Text style={[styles.presensiLabel, { color: theme.primary }]}>
               Jam Masuk
             </Text>
@@ -191,7 +201,9 @@ const HomeScreen = () => {
         {/* KELUAR */}
         <View style={[styles.presensiCard, { backgroundColor: theme.card }]}>
           <View style={styles.presensiHeader}>
-            <Text style={styles.presensiDate}>Jumat, 19 Desember 2025</Text>
+            <Text style={styles.presensiDate}>
+              {today.dayName}, {today.fullDate}
+            </Text>
             <TouchableOpacity style={styles.deleteRow}>
               <Ionicons name="trash" size={16} color={theme.danger} />
               <Text style={[styles.deleteText, { color: theme.danger }]}>
@@ -210,14 +222,6 @@ const HomeScreen = () => {
             </Text>
           </View>
         </View>
-
-        {/* LOGOUT */}
-        <TouchableOpacity
-          style={[styles.logoutButton, { backgroundColor: theme.primary }]}
-          onPress={handleLogout}
-        >
-          <Text style={styles.logoutText}>Logout</Text>
-        </TouchableOpacity>
       </ScrollView>
     </>
   );

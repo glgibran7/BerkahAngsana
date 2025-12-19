@@ -20,6 +20,7 @@ import Api from '../utils/Api';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import logo from '../image/logo_berkah_large.png';
+import logoDark from '../image/logo_white.png';
 
 const { width } = Dimensions.get('window');
 
@@ -143,7 +144,7 @@ const LoginScreen = () => {
         contentContainerStyle={[styles.container, themeStyles.container]}
       >
         <Animated.Image
-          source={logo}
+          source={isDark ? logoDark : logo}
           style={[
             styles.logo,
             { opacity: fadeAnim, width: width * 0.9, height: width * 0.5 },
