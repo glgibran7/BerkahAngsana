@@ -2,6 +2,7 @@ import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import Ionicons from '@react-native-vector-icons/ionicons';
 import { useColorScheme } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import HomeScreen from '../screens/Home';
 import AbsensiScreen from '../screens/Home';
@@ -12,6 +13,7 @@ const Tab = createBottomTabNavigator();
 const BottomTabs = () => {
   const scheme = useColorScheme();
   const isDark = scheme === 'dark';
+  const insets = useSafeAreaInsets();
 
   return (
     <Tab.Navigator
@@ -20,15 +22,19 @@ const BottomTabs = () => {
         tabBarStyle: {
           backgroundColor: isDark ? '#000' : '#fff',
           borderTopColor: isDark ? '#222' : '#eee',
-          height: 60,
+
+          // ⭐ INI KUNCI AMAN
+          height: 60 + insets.bottom,
+          paddingBottom: insets.bottom,
+          paddingTop: 6,
         },
         tabBarActiveTintColor: '#d32f2f',
         tabBarInactiveTintColor: isDark ? '#888' : '#999',
         tabBarLabelStyle: {
           fontSize: 12,
-          marginBottom: 5,
+          marginBottom: 4,
         },
-        tabBarIcon: ({ color, size, focused }) => {
+        tabBarIcon: ({ color, focused }) => {
           let iconName;
 
           if (route.name === 'Beranda') {
