@@ -10,8 +10,27 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Ionicons from '@react-native-vector-icons/ionicons';
+import { useGlobal } from '../context/GlobalContext';
 
 const { width } = Dimensions.get('window');
+
+const getFirstName = (fullName = '') => {
+  if (!fullName) return '';
+  const first = fullName.trim().split(' ')[0];
+  return first.charAt(0).toUpperCase() + first.slice(1).toLowerCase();
+};
+
+const getInitial = (fullName = '') => {
+  if (!fullName) return '';
+
+  const words = fullName.trim().split(' ');
+
+  if (words.length === 1) {
+    return words[0].charAt(0).toUpperCase();
+  }
+
+  return words[0].charAt(0).toUpperCase() + words[1].charAt(0).toUpperCase();
+};
 
 const Header = ({
   title,
@@ -29,15 +48,19 @@ const Header = ({
 }) => {
   const scheme = useColorScheme();
   const isDark = scheme === 'dark';
+  const { user } = useGlobal();
+
+  const firstName = getFirstName(user?.nama) || 'User';
+  const initialName = getInitial(user?.nama) || 'U';
 
   return (
     <SafeAreaView
       edges={['top']}
-      style={{ backgroundColor: isDark ? '#000' : '#FFF' }}
+      style={{ backgroundColor: isDark ? '#0E0E0E' : '#F6F6F6' }}
     >
       <StatusBar
         barStyle={isDark ? 'light-content' : 'dark-content'}
-        backgroundColor={isDark ? '#000' : '#FFF'}
+        backgroundColor={isDark ? '#0E0E0E' : '#F6F6F6'}
       />
 
       <View style={styles.container}>
@@ -53,45 +76,25 @@ const Header = ({
             </TouchableOpacity>
           )}
 
-          {showLocation ? (
-            <TouchableOpacity
-              onPress={onLocationPress}
-              style={styles.locationWrapper}
+          <View style={{ marginLeft: 8 }}>
+            <Text
+              style={{
+                fontSize: 13,
+                color: isDark ? '#aaa' : '#666',
+              }}
             >
-              <Text
-                style={[
-                  styles.locationLabel,
-                  { color: isDark ? '#aaa' : '#666' },
-                ]}
-              >
-                Lokasi
-              </Text>
-              <View style={styles.locationRow}>
-                <Ionicons
-                  name="location-outline"
-                  size={width * 0.06}
-                  color={isDark ? '#FFF' : '#000'}
-                />
-                <Text
-                  style={[
-                    styles.locationText,
-                    { color: isDark ? '#FFF' : '#000' },
-                  ]}
-                >
-                  {location}
-                </Text>
-                <Ionicons
-                  name="chevron-down"
-                  size={width * 0.05}
-                  color={isDark ? '#FFF' : '#000'}
-                />
-              </View>
-            </TouchableOpacity>
-          ) : (
-            <Text style={[styles.title, { color: isDark ? '#FFF' : '#000' }]}>
-              {title}
+              Hai,
             </Text>
-          )}
+            <Text
+              style={{
+                fontSize: 18,
+                fontWeight: 'bold',
+                color: isDark ? '#fff' : '#000',
+              }}
+            >
+              {firstName}
+            </Text>
+          </View>
         </View>
 
         {/* Kanan: Pesan + Notifikasi */}
@@ -134,6 +137,25 @@ const Header = ({
               </View>
             </TouchableOpacity>
           )}
+          {/* PROFILE INISIAL */}
+          <TouchableOpacity onPress={() => {}} style={{ marginLeft: 8 }}>
+            <View
+              style={[
+                styles.profileCircle,
+                { backgroundColor: isDark ? '#1e1e1e' : '#e0e0e0' },
+              ]}
+            >
+              <Text
+                style={{
+                  fontSize: 16,
+                  fontWeight: 'bold',
+                  color: isDark ? '#fff' : '#000',
+                }}
+              >
+                {initialName}
+              </Text>
+            </View>
+          </TouchableOpacity>
         </View>
       </View>
     </SafeAreaView>
@@ -200,6 +222,13 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 12,
     fontWeight: 'bold',
+  },
+  profileCircle: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 });
 
