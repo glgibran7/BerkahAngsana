@@ -18,6 +18,14 @@ import { useGlobal } from '../context/GlobalContext';
 
 const { width } = Dimensions.get('window');
 
+const capitalizeWords = (str = '') => {
+  return str
+    .toLowerCase()
+    .split(' ')
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ');
+};
+
 /* ================= UTIL ================= */
 const getFirstName = (fullName = '') => {
   if (!fullName) return '';
@@ -138,7 +146,7 @@ const Header = ({
                 color: isDark ? '#fff' : '#000',
               }}
             >
-              {firstName}
+              {capitalizeWords(user?.nama)}
             </Text>
           </View>
         </View>

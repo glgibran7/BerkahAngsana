@@ -1,18 +1,19 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View,
   StyleSheet,
   useColorScheme,
   TouchableOpacity,
   Text,
-  Alert,
   ScrollView,
+  RefreshControl,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Ionicons from '@react-native-vector-icons/ionicons';
 import { useGlobal } from '../context/GlobalContext';
 import Header from '../components/Header';
+import Api from '../utils/Api';
 
 const getTodayDate = () => {
   const now = new Date();
@@ -44,8 +45,13 @@ const HomeScreen = () => {
   const colorScheme = useColorScheme();
   const isDark = colorScheme === 'dark';
   const navigation = useNavigation();
-  const { setUser, showToast } = useGlobal();
+  const { showToast } = useGlobal();
   const today = getTodayDate();
+
+  // State untuk data absensi hari ini
+  const [absensi, setAbsensi] = useState(null);
+  const [loadingAbsensi, setLoadingAbsensi] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
 
   const theme = {
     background: isDark ? '#0E0E0E' : '#F6F6F6',
@@ -61,13 +67,78 @@ const HomeScreen = () => {
     iconPrimary: isDark ? '#ffffffff' : '#D32F2F',
   };
 
+  // Fungsi fetch absensi
+  const fetchAbsensi = async id_karyawan => {
+    try {
+      setLoadingAbsensi(true);
+      const response = await Api.get(`/absensi/check/${id_karyawan}`);
+      setAbsensi(response.data);
+    } catch (error) {
+      console.log('Error fetch absensi:', error);
+      showToast(
+        'Gagal mengambil data absensi',
+        'Cek koneksi internet Anda',
+        'error',
+      );
+      setAbsensi(null);
+    } finally {
+      setLoadingAbsensi(false);
+    }
+  };
+
+  // Load id_karyawan dan fetch absensi saat pertama load
+  useEffect(() => {
+    const loadAbsensi = async () => {
+      try {
+        const id_karyawan = await AsyncStorage.getItem('id_karyawan');
+        if (id_karyawan) {
+          fetchAbsensi(id_karyawan);
+        } else {
+          showToast(
+            'Data karyawan tidak ditemukan',
+            'Silahkan login ulang',
+            'error',
+          );
+        }
+      } catch (error) {
+        console.log('Error loading id_karyawan:', error);
+      }
+    };
+
+    loadAbsensi();
+  }, []);
+
+  // Fungsi untuk refresh via pull down
+  const onRefresh = async () => {
+    setRefreshing(true);
+    try {
+      const id_karyawan = await AsyncStorage.getItem('id_karyawan');
+      if (id_karyawan) {
+        await fetchAbsensi(id_karyawan);
+      } else {
+        showToast(
+          'Data karyawan tidak ditemukan',
+          'Silahkan login ulang',
+          'error',
+        );
+      }
+    } catch (error) {
+      console.log('Error onRefresh:', error);
+    } finally {
+      setRefreshing(false);
+    }
+  };
+
   return (
     <>
-      <Header showMessage={false} showBack={false} />
+      <Header showBack={false} />
 
       <ScrollView
         style={[styles.container, { backgroundColor: theme.background }]}
         showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }
       >
         {/* INFO + REKAP*/}
         <View style={[styles.infoCard, { backgroundColor: theme.card }]}>
@@ -187,18 +258,22 @@ const HomeScreen = () => {
             <Text style={styles.presensiDate}>
               {today.dayName}, {today.fullDate}
             </Text>
-            <Text style={[styles.presensiLabel, { color: theme.iconPrimary }]}>
-              Jam Masuk
+            <Text style={[styles.presensiLabel, { color: theme.textPrimary }]}>
+              Jam Masuk:
             </Text>
           </View>
 
           <View style={styles.presensiBody}>
             <Ionicons name="location" size={18} color={theme.iconPrimary} />
-            <Text style={[styles.presensiStatus, { color: theme.iconPrimary }]}>
-              Belum absensi masuk
+            <Text style={[styles.presensiStatus, { color: theme.textPrimary }]}>
+              {loadingAbsensi
+                ? 'Memuat...'
+                : absensi?.jam_masuk
+                ? `${absensi.lokasi_masuk}`
+                : 'Belum absensi masuk'}
             </Text>
-            <Text style={[styles.presensiTime, { color: theme.iconPrimary }]}>
-              --:--
+            <Text style={[styles.presensiTime, { color: theme.textPrimary }]}>
+              {loadingAbsensi ? '--:--' : absensi?.jam_masuk ?? '--:--'}
             </Text>
           </View>
         </View>
@@ -219,11 +294,15 @@ const HomeScreen = () => {
 
           <View style={styles.presensiBody}>
             <Ionicons name="location" size={18} color={theme.iconPrimary} />
-            <Text style={[styles.presensiStatus, { color: theme.iconPrimary }]}>
-              Belum absensi keluar
+            <Text style={[styles.presensiStatus, { color: theme.textPrimary }]}>
+              {loadingAbsensi
+                ? 'Memuat...'
+                : absensi?.jam_keluar
+                ? `${absensi.lokasi_keluar || '-'} - ${absensi.jam_keluar}`
+                : 'Belum absensi keluar'}
             </Text>
-            <Text style={[styles.presensiTime, { color: theme.iconPrimary }]}>
-              --:--
+            <Text style={[styles.presensiTime, { color: theme.textPrimary }]}>
+              {loadingAbsensi ? '--:--' : absensi?.jam_keluar ?? '--:--'}
             </Text>
           </View>
         </View>
@@ -383,20 +462,5 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontWeight: '600',
     marginLeft: 4,
-  },
-
-  /* ===== LOGOUT ===== */
-  logoutButton: {
-    marginHorizontal: 16,
-    marginBottom: 30,
-    paddingVertical: 14,
-    borderRadius: 12,
-    alignItems: 'center',
-  },
-
-  logoutText: {
-    color: '#FFFFFF',
-    fontWeight: 'bold',
-    fontSize: 14,
   },
 });

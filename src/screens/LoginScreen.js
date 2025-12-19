@@ -97,9 +97,15 @@ const LoginScreen = () => {
       const data = response.data;
 
       if (data?.access_token) {
-        // Simpan token
+        // Simpan token dan id_karyawan ke AsyncStorage
         await AsyncStorage.setItem('token', data.access_token);
         await AsyncStorage.setItem('user', JSON.stringify(data));
+
+        // Simpan id_karyawan secara terpisah juga jika perlu
+        if (data.id_karyawan) {
+          await AsyncStorage.setItem('id_karyawan', String(data.id_karyawan));
+        }
+
         setUser(data);
 
         // Remember me
