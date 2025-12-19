@@ -116,7 +116,7 @@ const LoginScreen = () => {
         const namaCapitalize = capitalizeName(data.nama);
 
         showToast('Selamat datang kembali', `${namaCapitalize} 👋`, 'success');
-        navigation.replace('Home');
+        navigation.replace('MainTabs');
       } else {
         hideLoading();
         showToast('Login gagal', 'Token tidak ditemukan', 'error');
