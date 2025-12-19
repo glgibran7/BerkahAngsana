@@ -58,6 +58,7 @@ const HomeScreen = () => {
     info: '#1976D2',
     warning: '#FB8C00',
     danger: '#B71C1C',
+    iconPrimary: isDark ? '#ffffffff' : '#D32F2F',
   };
 
   return (
@@ -141,7 +142,7 @@ const HomeScreen = () => {
             <Ionicons
               name="document-text-outline"
               size={30}
-              color={theme.primary}
+              color={theme.iconPrimary}
             />
             <Text style={[styles.menuText, { color: theme.textPrimary }]}>
               Izin
@@ -153,7 +154,11 @@ const HomeScreen = () => {
             style={[styles.menuItem, { backgroundColor: theme.card }]}
             onPress={() => navigation.navigate('Sakit')}
           >
-            <Ionicons name="medkit-outline" size={30} color={theme.primary} />
+            <Ionicons
+              name="medkit-outline"
+              size={30}
+              color={theme.iconPrimary}
+            />
             <Text style={[styles.menuText, { color: theme.textPrimary }]}>
               Sakit
             </Text>
@@ -164,7 +169,7 @@ const HomeScreen = () => {
             style={[styles.menuItem, { backgroundColor: theme.card }]}
             onPress={() => navigation.navigate('Lembur')}
           >
-            <Ionicons name="time-outline" size={30} color={theme.primary} />
+            <Ionicons name="time-outline" size={30} color={theme.iconPrimary} />
             <Text style={[styles.menuText, { color: theme.textPrimary }]}>
               Lembur
             </Text>
@@ -182,17 +187,17 @@ const HomeScreen = () => {
             <Text style={styles.presensiDate}>
               {today.dayName}, {today.fullDate}
             </Text>
-            <Text style={[styles.presensiLabel, { color: theme.primary }]}>
+            <Text style={[styles.presensiLabel, { color: theme.iconPrimary }]}>
               Jam Masuk
             </Text>
           </View>
 
           <View style={styles.presensiBody}>
-            <Ionicons name="location" size={18} color={theme.primary} />
-            <Text style={[styles.presensiStatus, { color: theme.primary }]}>
+            <Ionicons name="location" size={18} color={theme.iconPrimary} />
+            <Text style={[styles.presensiStatus, { color: theme.iconPrimary }]}>
               Belum absensi masuk
             </Text>
-            <Text style={[styles.presensiTime, { color: theme.primary }]}>
+            <Text style={[styles.presensiTime, { color: theme.iconPrimary }]}>
               --:--
             </Text>
           </View>
@@ -213,11 +218,11 @@ const HomeScreen = () => {
           </View>
 
           <View style={styles.presensiBody}>
-            <Ionicons name="location" size={18} color={theme.primary} />
-            <Text style={[styles.presensiStatus, { color: theme.primary }]}>
+            <Ionicons name="location" size={18} color={theme.iconPrimary} />
+            <Text style={[styles.presensiStatus, { color: theme.iconPrimary }]}>
               Belum absensi keluar
             </Text>
-            <Text style={[styles.presensiTime, { color: theme.primary }]}>
+            <Text style={[styles.presensiTime, { color: theme.iconPrimary }]}>
               --:--
             </Text>
           </View>
