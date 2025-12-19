@@ -7,7 +7,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import HomeScreen from '../screens/Home';
 import AbsensiScreen from '../screens/Home';
-import HistoriScreen from '../screens/Home';
+import HistoriScreen from '../screens/HistoryScreen';
 
 const Tab = createBottomTabNavigator();
 

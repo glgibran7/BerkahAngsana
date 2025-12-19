@@ -51,6 +51,12 @@ const HomeScreen = () => {
   // State untuk data absensi hari ini
   const [absensi, setAbsensi] = useState(null);
   const [loadingAbsensi, setLoadingAbsensi] = useState(true);
+
+  // State untuk data rekap absensi
+  const [rekap, setRekap] = useState(null);
+  const [loadingRekap, setLoadingRekap] = useState(true);
+
+  // State refresh control
   const [refreshing, setRefreshing] = useState(false);
 
   const theme = {
@@ -86,13 +92,35 @@ const HomeScreen = () => {
     }
   };
 
-  // Load id_karyawan dan fetch absensi saat pertama load
+  // Fungsi fetch rekap absensi
+  const fetchRekap = async id_karyawan => {
+    try {
+      setLoadingRekap(true);
+      const response = await Api.get(
+        `/rekapan/rekap?id_karyawan=${id_karyawan}`,
+      );
+      setRekap(response.data.rekap);
+    } catch (error) {
+      console.log('Error fetch rekap:', error);
+      showToast(
+        'Gagal mengambil data rekap',
+        'Cek koneksi internet Anda',
+        'error',
+      );
+      setRekap(null);
+    } finally {
+      setLoadingRekap(false);
+    }
+  };
+
+  // Load id_karyawan dan fetch absensi + rekap saat pertama load
   useEffect(() => {
-    const loadAbsensi = async () => {
+    const loadData = async () => {
       try {
         const id_karyawan = await AsyncStorage.getItem('id_karyawan');
         if (id_karyawan) {
           fetchAbsensi(id_karyawan);
+          fetchRekap(id_karyawan);
         } else {
           showToast(
             'Data karyawan tidak ditemukan',
@@ -105,7 +133,7 @@ const HomeScreen = () => {
       }
     };
 
-    loadAbsensi();
+    loadData();
   }, []);
 
   // Fungsi untuk refresh via pull down
@@ -115,6 +143,7 @@ const HomeScreen = () => {
       const id_karyawan = await AsyncStorage.getItem('id_karyawan');
       if (id_karyawan) {
         await fetchAbsensi(id_karyawan);
+        await fetchRekap(id_karyawan);
       } else {
         showToast(
           'Data karyawan tidak ditemukan',
@@ -172,7 +201,7 @@ const HomeScreen = () => {
           <View style={styles.rekapRow}>
             <View style={styles.rekapItem}>
               <Text style={[styles.rekapValue, { color: theme.success }]}>
-                8 Hari
+                {loadingRekap ? '...' : rekap?.jumlah_hadir ?? 0} Hari
               </Text>
               <Text style={[styles.rekapLabel, { color: theme.textSecondary }]}>
                 Hadir
@@ -181,7 +210,10 @@ const HomeScreen = () => {
 
             <View style={styles.rekapItem}>
               <Text style={[styles.rekapValue, { color: theme.warning }]}>
-                1 Hari
+                {loadingRekap
+                  ? '...'
+                  : (rekap?.jumlah_izin ?? 0) + (rekap?.jumlah_sakit ?? 0)}{' '}
+                Hari
               </Text>
               <Text style={[styles.rekapLabel, { color: theme.textSecondary }]}>
                 Izin / Sakit
@@ -190,7 +222,7 @@ const HomeScreen = () => {
 
             <View style={styles.rekapItem}>
               <Text style={[styles.rekapValue, { color: theme.danger }]}>
-                6 Hari
+                {loadingRekap ? '...' : rekap?.jumlah_alpha ?? 0} Hari
               </Text>
               <Text style={[styles.rekapLabel, { color: theme.textSecondary }]}>
                 Tanpa Keterangan
@@ -392,8 +424,8 @@ const styles = StyleSheet.create({
 
   menuRow: {
     flexDirection: 'row',
-    justifyContent: 'space-around',
     marginBottom: 20,
+    marginHorizontal: 16,
   },
 
   menuItem: {
@@ -403,6 +435,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     elevation: 2,
+    marginRight: 10,
   },
 
   menuText: {
