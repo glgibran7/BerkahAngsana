@@ -71,9 +71,6 @@ const HomeScreen = () => {
               <Text style={[styles.timeText, { color: theme.textPrimary }]}>
                 08.00 - 17.00 WITA
               </Text>
-              <Text style={[styles.subText, { color: theme.textSecondary }]}>
-                Masuk : 07:55 WITA
-              </Text>
             </View>
 
             <View style={{ alignItems: 'flex-end' }}>
@@ -82,9 +79,6 @@ const HomeScreen = () => {
               </Text>
               <Text style={[styles.dateText, { color: theme.textPrimary }]}>
                 3 Februari 2022
-              </Text>
-              <Text style={[styles.subText, { color: theme.textSecondary }]}>
-                Pulang : 17:55 WITA
               </Text>
             </View>
           </View>
@@ -110,16 +104,16 @@ const HomeScreen = () => {
                 1 Hari
               </Text>
               <Text style={[styles.rekapLabel, { color: theme.textSecondary }]}>
-                Izin
+                Izin / Sakit
               </Text>
             </View>
 
             <View style={styles.rekapItem}>
-              <Text style={[styles.rekapValue, { color: theme.warning }]}>
+              <Text style={[styles.rekapValue, { color: theme.danger }]}>
                 6 Hari
               </Text>
               <Text style={[styles.rekapLabel, { color: theme.textSecondary }]}>
-                Sisa Cuti Tahun Ini
+                Tanpa Keterangan
               </Text>
             </View>
           </View>
