@@ -5,9 +5,9 @@ import Ionicons from '@react-native-vector-icons/ionicons';
 import { useColorScheme } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import HomeScreen from '../screens/Home';
+import MainStack from '../navigation/MainStack';
 import AbsensiScreen from '../screens/Home';
-import HistoriScreen from '../screens/HistoryScreen';
+import HistoryStack from '../navigation/HistoryStack';
 
 const Tab = createBottomTabNavigator();
 
@@ -93,7 +93,7 @@ const BottomTabs = () => {
         },
       })}
     >
-      <Tab.Screen name="Beranda" component={HomeScreen} />
+      <Tab.Screen name="Beranda" component={MainStack} />
 
       <Tab.Screen
         name="Absensi"
@@ -101,7 +101,7 @@ const BottomTabs = () => {
         options={{ tabBarLabel: '' }}
       />
 
-      <Tab.Screen name="Histori" component={HistoriScreen} />
+      <Tab.Screen name="Histori" component={HistoryStack} />
     </Tab.Navigator>
   );
 };

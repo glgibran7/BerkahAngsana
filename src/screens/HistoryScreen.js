@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -11,12 +11,31 @@ import Header from '../components/Header';
 import Ionicons from '@react-native-vector-icons/ionicons';
 import { useNavigation } from '@react-navigation/native';
 import DateTimePicker from '@react-native-community/datetimepicker';
+import Api from '../utils/Api';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
+const zeroToDash = value => {
+  if (value === 0 || value === null || value === undefined) return '-';
+  return value;
+};
+
+const rupiahOrDash = value => {
+  if (!value || value === 0) return '-';
+  return `Rp ${value.toLocaleString('id-ID')}`;
+};
+
+const menitOrDash = value => {
+  if (!value || value === 0) return '-';
+  return `${value} menit`;
+};
 
 const HistoryScreen = () => {
   const navigation = useNavigation();
   const isDark = useColorScheme() === 'dark';
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [showPicker, setShowPicker] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [absensiHarian, setAbsensiHarian] = useState(null);
 
   const formatDate = date =>
     date.toLocaleDateString('id-ID', {
@@ -25,6 +44,13 @@ const HistoryScreen = () => {
       month: 'long',
       year: 'numeric',
     });
+
+  const formatTanggalDDMMYYYY = date => {
+    const d = String(date.getDate()).padStart(2, '0');
+    const m = String(date.getMonth() + 1).padStart(2, '0');
+    const y = date.getFullYear();
+    return `${d}-${m}-${y}`;
+  };
 
   const theme = {
     background: isDark ? '#0E0E0E' : '#F6F6F6',
@@ -35,20 +61,39 @@ const HistoryScreen = () => {
     success: '#4CAF50',
     warning: '#FB8C00',
   };
+  // console.log('REQUEST:', {
+  //   id_karyawan,
+  //   tanggal,
+  // });
 
-  /* ===== DATA HARDCODE SEMENTARA ===== */
-  const absensiHarian = {
-    gaji_harian: 'Rp 100.000',
-    jam_masuk: '08:10',
-    jam_keluar: '17:00',
-    lokasi_masuk: 'Kantor Pusat',
-    lokasi_keluar: 'Kantor Pusat',
-    jam_terlambat: '00:10',
-    jam_bolos: '00:00',
-    total_jam_kerja: '08:50',
-    tunjangan_kehadiran: 'Rp 20.000',
-    upah_bersih: 'Rp 120.000',
+  const fetchAbsensiHarian = async date => {
+    try {
+      setLoading(true);
+
+      const id_karyawan = await AsyncStorage.getItem('id_karyawan');
+      if (!id_karyawan) return;
+
+      const tanggal = formatTanggalDDMMYYYY(date);
+
+      const response = await Api.get(
+        `/perhitungan-gaji/harian?id_karyawan=${id_karyawan}&tanggal=${tanggal}`,
+      );
+
+      setAbsensiHarian(response.data.data);
+    } catch (error) {
+      console.log(
+        'Error fetch absensi harian:',
+        error.response?.data || error.message,
+      );
+      setAbsensiHarian(null);
+    } finally {
+      setLoading(false);
+    }
   };
+
+  useEffect(() => {
+    fetchAbsensiHarian(selectedDate);
+  }, []);
 
   const renderItem = (label, value, color) => (
     <View style={styles.itemRow}>
@@ -102,27 +147,62 @@ const HistoryScreen = () => {
                 setShowPicker(false);
                 if (date) {
                   setSelectedDate(date);
-                  // nanti di sini fetch API berdasarkan tanggal
+                  fetchAbsensiHarian(date);
                 }
               }}
             />
           )}
 
-          {/* DATA HARDCODE */}
-          {renderItem('Gaji Harian', absensiHarian.gaji_harian)}
-          {renderItem('Jam Masuk', absensiHarian.jam_masuk)}
-          {renderItem('Jam Keluar', absensiHarian.jam_keluar)}
-          {renderItem('Lokasi Masuk', absensiHarian.lokasi_masuk)}
-          {renderItem('Lokasi Keluar', absensiHarian.lokasi_keluar)}
-          {renderItem(
-            'Jam Terlambat',
-            absensiHarian.jam_terlambat,
-            theme.warning,
+          {loading ? (
+            <Text style={{ color: theme.textSecondary }}>Memuat data...</Text>
+          ) : absensiHarian ? (
+            <>
+              {renderItem(
+                'Gaji Harian',
+                rupiahOrDash(absensiHarian.gaji_harian),
+              )}
+
+              {renderItem('Jam Masuk', absensiHarian.jam_masuk ?? '-')}
+
+              {renderItem('Jam Keluar', absensiHarian.jam_keluar ?? '-')}
+
+              {renderItem(
+                'Jam Terlambat',
+                menitOrDash(absensiHarian.jam_terlambat),
+                absensiHarian.jam_terlambat > 0
+                  ? theme.warning
+                  : theme.textSecondary,
+              )}
+
+              {renderItem(
+                'Jam Kurang',
+                menitOrDash(absensiHarian.jam_kurang),
+                absensiHarian.jam_kurang > 0
+                  ? theme.warning
+                  : theme.textSecondary,
+              )}
+
+              {renderItem(
+                'Total Jam Kerja',
+                menitOrDash(absensiHarian.total_jam_kerja),
+              )}
+
+              {renderItem(
+                'Tunjangan Kehadiran',
+                rupiahOrDash(absensiHarian.tunjangan_kehadiran),
+              )}
+
+              {renderItem(
+                'Upah Bersih',
+                rupiahOrDash(absensiHarian.upah_bersih),
+                theme.primary,
+              )}
+            </>
+          ) : (
+            <Text style={{ color: theme.textSecondary }}>
+              Data absensi tidak tersedia
+            </Text>
           )}
-          {renderItem('Jam Bolos', absensiHarian.jam_bolos, theme.success)}
-          {renderItem('Total Jam Kerja', absensiHarian.total_jam_kerja)}
-          {renderItem('Tunjangan Kehadiran', absensiHarian.tunjangan_kehadiran)}
-          {renderItem('Upah Bersih', absensiHarian.upah_bersih, theme.primary)}
         </View>
 
         {/* ===== MENU REKAPAN ===== */}
@@ -168,7 +248,7 @@ const HistoryScreen = () => {
           style={[styles.menuRow, { backgroundColor: theme.card }]}
           onPress={() => navigation.navigate('RekapLembur')}
         >
-          <Ionicons name="time-outline" size={22} color={theme.primary} />
+          <Ionicons name="hourglass-outline" size={22} color={theme.primary} />
           <Text style={[styles.menuText, { color: theme.textPrimary }]}>
             Rekapan Lembur
           </Text>

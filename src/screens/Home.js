@@ -233,7 +233,7 @@ const HomeScreen = () => {
 
         {/* MENU UTAMA */}
         <Text style={[styles.menuTitle, { color: theme.textPrimary }]}>
-          Menu
+          Menu Pengajuan
         </Text>
 
         <View style={styles.menuRow}>
@@ -267,12 +267,31 @@ const HomeScreen = () => {
             </Text>
           </TouchableOpacity>
 
+          {/* CUTI */}
+          <TouchableOpacity
+            style={[styles.menuItem, { backgroundColor: theme.card }]}
+            onPress={() => navigation.navigate('Cuti')}
+          >
+            <Ionicons
+              name="calendar-outline"
+              size={30}
+              color={theme.iconPrimary}
+            />
+            <Text style={[styles.menuText, { color: theme.textPrimary }]}>
+              Cuti
+            </Text>
+          </TouchableOpacity>
+
           {/* LEMBUR */}
           <TouchableOpacity
             style={[styles.menuItem, { backgroundColor: theme.card }]}
             onPress={() => navigation.navigate('Lembur')}
           >
-            <Ionicons name="time-outline" size={30} color={theme.iconPrimary} />
+            <Ionicons
+              name="hourglass-outline"
+              size={30}
+              color={theme.iconPrimary}
+            />
             <Text style={[styles.menuText, { color: theme.textPrimary }]}>
               Lembur
             </Text>
@@ -431,18 +450,18 @@ const styles = StyleSheet.create({
 
   menuRow: {
     flexDirection: 'row',
-    marginBottom: 20,
+    justifyContent: 'space-between',
     marginHorizontal: 16,
+    marginBottom: 20,
   },
 
   menuItem: {
-    width: 90,
-    height: 90,
+    width: '23%', // pas untuk 4 item sejajar
+    aspectRatio: 1, // biar kotaknya selalu persegi
     borderRadius: 16,
     justifyContent: 'center',
     alignItems: 'center',
     elevation: 2,
-    marginRight: 10,
   },
 
   menuText: {

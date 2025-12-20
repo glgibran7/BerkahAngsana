@@ -11,41 +11,28 @@ import {
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Ionicons from '@react-native-vector-icons/ionicons';
 import { useGlobal } from '../context/GlobalContext';
 
 const { width } = Dimensions.get('window');
 
-const capitalizeWords = (str = '') => {
-  return str
+/* ================= UTIL ================= */
+const capitalizeWords = (str = '') =>
+  str
     .toLowerCase()
     .split(' ')
-    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+    .map(w => w.charAt(0).toUpperCase() + w.slice(1))
     .join(' ');
-};
-
-/* ================= UTIL ================= */
-const getFirstName = (fullName = '') => {
-  if (!fullName) return '';
-  const first = fullName.trim().split(' ')[0];
-  return first.charAt(0).toUpperCase() + first.slice(1).toLowerCase();
-};
-
-const getFullName = (fullName = '') => {
-  if (!fullName) return '';
-  return fullName.trim();
-};
 
 const getInitial = (fullName = '') => {
-  if (!fullName) return '';
+  if (!fullName) return 'U';
   const words = fullName.trim().split(' ');
-  if (words.length === 1) return words[0][0].toUpperCase();
-  return words[0][0].toUpperCase() + words[1][0].toUpperCase();
+  return words.length === 1
+    ? words[0][0].toUpperCase()
+    : words[0][0].toUpperCase() + words[1][0].toUpperCase();
 };
 
-/* === RANDOM COLOR (KONSISTEN PER USER) === */
 const COLOR_POOL = [
   '#E53935',
   '#8E24AA',
@@ -57,7 +44,7 @@ const COLOR_POOL = [
   '#6D4C41',
 ];
 
-const getColorFromName = (name = '') => {
+const getColorFromName = name => {
   let hash = 0;
   for (let i = 0; i < name.length; i++) {
     hash = name.charCodeAt(i) + ((hash << 5) - hash);
@@ -70,46 +57,26 @@ const Header = ({
   title,
   onBack,
   showBack = true,
-  onNotificationPress,
-  notificationCount = 5,
+  showGreeting = true, // ⭐ BARU
   showNotification = true,
+  notificationCount = 0,
+  onNotificationPress,
 }) => {
-  const scheme = useColorScheme();
-  const isDark = scheme === 'dark';
+  const isDark = useColorScheme() === 'dark';
   const { user, setUser, showToast } = useGlobal();
   const [menuVisible, setMenuVisible] = useState(false);
-
-  const firstName = getFirstName(user?.nama) || 'User';
-  const fullName = getFullName(user?.nama) || 'User';
-  const initialName = getInitial(user?.nama) || 'U';
+  const navigation = useNavigation();
 
   const profileColor = useMemo(
     () => getColorFromName(user?.nama || 'user'),
     [user?.nama],
   );
 
-  const navigation = useNavigation();
-
   const handleLogout = async () => {
-    try {
-      setMenuVisible(false);
-
-      // HAPUS DATA LOGIN
-      await AsyncStorage.multiRemove(['token', 'user']);
-
-      // RESET GLOBAL STATE
-      setUser(null);
-
-      showToast('Logout berhasil', 'Sampai jumpa', 'success');
-
-      // RESET NAVIGATION → KEMBALI KE LOGIN
-      navigation.reset({
-        index: 0,
-        routes: [{ name: 'Login' }],
-      });
-    } catch (error) {
-      console.log('Logout error:', error);
-    }
+    await AsyncStorage.multiRemove(['token', 'user']);
+    setUser(null);
+    showToast('Logout berhasil', 'Sampai jumpa', 'success');
+    navigation.reset({ index: 0, routes: [{ name: 'Login' }] });
   };
 
   return (
@@ -123,74 +90,61 @@ const Header = ({
       />
 
       <View style={styles.container}>
-        {/* KIRI */}
+        {/* ===== LEFT ===== */}
         <View style={styles.leftSection}>
           {showBack && (
             <TouchableOpacity onPress={onBack} style={styles.iconButton}>
               <Ionicons
                 name="arrow-back"
-                size={width * 0.075}
-                color={isDark ? '#FFF' : '#000'}
+                size={width * 0.07}
+                color={isDark ? '#fff' : '#000'}
               />
             </TouchableOpacity>
           )}
 
           <View style={{ marginLeft: 8 }}>
-            <Text style={{ fontSize: 13, color: isDark ? '#aaa' : '#666' }}>
-              Hai,
-            </Text>
-            <Text
-              style={{
-                fontSize: 18,
-                fontWeight: 'bold',
-                color: isDark ? '#fff' : '#000',
-              }}
-            >
-              {capitalizeWords(user?.nama)}
-            </Text>
+            {showGreeting ? (
+              <>
+                <Text style={styles.haiText}>Hai,</Text>
+                <Text style={styles.nameText}>
+                  {capitalizeWords(user?.nama)}
+                </Text>
+              </>
+            ) : title ? (
+              <Text style={styles.titleText}>{title}</Text>
+            ) : null}
           </View>
         </View>
 
-        {/* KANAN */}
+        {/* ===== RIGHT ===== */}
         <View style={styles.rightSection}>
           {showNotification && (
-            <TouchableOpacity
-              onPress={onNotificationPress}
-              style={styles.iconButton}
-            >
-              <View>
-                <Ionicons
-                  name="notifications-outline"
-                  size={width * 0.075}
-                  color={isDark ? '#FFF' : '#000'}
-                />
-                {notificationCount > 0 && (
-                  <View style={styles.badge}>
-                    <Text style={styles.badgeText}>{notificationCount}</Text>
-                  </View>
-                )}
-              </View>
+            <TouchableOpacity onPress={onNotificationPress}>
+              <Ionicons
+                name="notifications-outline"
+                size={width * 0.07}
+                color={isDark ? '#fff' : '#000'}
+              />
+              {notificationCount > 0 && (
+                <View style={styles.badge}>
+                  <Text style={styles.badgeText}>{notificationCount}</Text>
+                </View>
+              )}
             </TouchableOpacity>
           )}
 
-          {/* PROFILE */}
           <TouchableOpacity onPress={() => setMenuVisible(true)}>
             <View
               style={[styles.profileCircle, { backgroundColor: profileColor }]}
             >
-              <Text style={styles.profileText}>{initialName}</Text>
+              <Text style={styles.profileText}>{getInitial(user?.nama)}</Text>
             </View>
           </TouchableOpacity>
         </View>
       </View>
 
-      {/* ===== PROFILE MENU ===== */}
-      <Modal
-        visible={menuVisible}
-        transparent
-        animationType="fade"
-        onRequestClose={() => setMenuVisible(false)}
-      >
+      {/* ===== MENU ===== */}
+      <Modal visible={menuVisible} transparent animationType="fade">
         <TouchableOpacity
           style={styles.overlay}
           activeOpacity={1}
@@ -203,17 +157,13 @@ const Header = ({
             ]}
           >
             <TouchableOpacity style={styles.menuItem}>
-              <Ionicons name="person-outline" size={20} color={profileColor} />
-              <Text
-                style={[styles.menuText, { color: isDark ? '#fff' : '#000' }]}
-              >
-                Profil
-              </Text>
+              <Ionicons name="person-outline" size={20} />
+              <Text style={styles.menuText}>Profil</Text>
             </TouchableOpacity>
 
             <View style={styles.menuDivider} />
 
-            <TouchableOpacity style={styles.menuItem} onPress={handleLogout}>
+            <TouchableOpacity onPress={handleLogout} style={styles.menuItem}>
               <Ionicons name="log-out-outline" size={20} color="#D32F2F" />
               <Text style={[styles.menuText, { color: '#D32F2F' }]}>
                 Logout
@@ -226,14 +176,16 @@ const Header = ({
   );
 };
 
+export default Header;
+
 /* ================= STYLE ================= */
 const styles = StyleSheet.create({
   container: {
     height: 64,
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
     paddingHorizontal: 16,
+    justifyContent: 'space-between',
   },
   leftSection: {
     flexDirection: 'row',
@@ -243,44 +195,36 @@ const styles = StyleSheet.create({
   rightSection: {
     flexDirection: 'row',
     alignItems: 'center',
+    gap: 12,
   },
-  iconButton: {
-    padding: 8,
-  },
-  badge: {
-    position: 'absolute',
-    top: -4,
-    right: -6,
-    backgroundColor: 'red',
-    borderRadius: 10,
-    paddingHorizontal: 5,
-    minWidth: 18,
-    alignItems: 'center',
-  },
-  badgeText: {
-    color: '#fff',
-    fontSize: 12,
-    fontWeight: 'bold',
-  },
+  iconButton: { padding: 6 },
+
+  haiText: { fontSize: 12, color: '#888' },
+  nameText: { fontSize: 18, fontWeight: 'bold' },
+  titleText: { fontSize: 18, fontWeight: 'bold' },
+
   profileCircle: {
     width: 36,
     height: 36,
     borderRadius: 18,
-    justifyContent: 'center',
     alignItems: 'center',
-    marginLeft: 8,
+    justifyContent: 'center',
   },
-  profileText: {
-    color: '#fff',
-    fontWeight: 'bold',
-    fontSize: 15,
-  },
+  profileText: { color: '#fff', fontWeight: 'bold' },
 
-  /* MENU */
+  badge: {
+    position: 'absolute',
+    top: -6,
+    right: -6,
+    backgroundColor: 'red',
+    borderRadius: 10,
+    paddingHorizontal: 5,
+  },
+  badgeText: { color: '#fff', fontSize: 10 },
+
   overlay: {
     flex: 1,
     backgroundColor: 'rgba(0,0,0,0.4)',
-    justifyContent: 'flex-start',
     alignItems: 'flex-end',
     paddingTop: 70,
     paddingRight: 16,
@@ -289,25 +233,13 @@ const styles = StyleSheet.create({
     width: 160,
     borderRadius: 12,
     paddingVertical: 8,
-    elevation: 5,
   },
   menuItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 10,
-    paddingHorizontal: 12,
+    padding: 12,
+    gap: 10,
   },
-  menuText: {
-    marginLeft: 10,
-    fontSize: 14,
-    fontWeight: '500',
-  },
-  menuDivider: {
-    height: 1,
-    backgroundColor: '#333',
-    marginVertical: 6,
-    opacity: 0.2,
-  },
+  menuText: { fontSize: 14 },
+  menuDivider: { height: 1, backgroundColor: '#ddd' },
 });
-
-export default Header;
