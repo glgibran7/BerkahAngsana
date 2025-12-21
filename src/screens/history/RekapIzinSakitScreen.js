@@ -125,6 +125,7 @@ const RekapIzinSakitScreen = ({ navigation }) => {
         title="Rekapan Izin, Sakit & Cuti"
         showGreeting={false}
         showNotification={false}
+        showProfileInitial={false}
         showBack
         onBack={() => navigation.goBack()}
       />

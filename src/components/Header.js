@@ -57,8 +57,9 @@ const Header = ({
   title,
   onBack,
   showBack = true,
-  showGreeting = true, // ⭐ BARU
+  showGreeting = true,
   showNotification = true,
+  showProfileInitial = true,
   notificationCount = 0,
   onNotificationPress,
 }) => {
@@ -66,6 +67,16 @@ const Header = ({
   const { user, setUser, showToast } = useGlobal();
   const [menuVisible, setMenuVisible] = useState(false);
   const navigation = useNavigation();
+
+  /* ===== THEME ===== */
+  const theme = {
+    background: isDark ? '#0E0E0E' : '#F6F6F6',
+    card: isDark ? '#1A1A1A' : '#FFFFFF',
+    textPrimary: isDark ? '#FFFFFF' : '#1E1E1E',
+    textSecondary: isDark ? '#A0A0A0' : '#7A7A7A',
+    divider: isDark ? '#2A2A2A' : '#E0E0E0',
+    danger: '#D32F2F',
+  };
 
   const profileColor = useMemo(
     () => getColorFromName(user?.nama || 'user'),
@@ -80,13 +91,10 @@ const Header = ({
   };
 
   return (
-    <SafeAreaView
-      edges={['top']}
-      style={{ backgroundColor: isDark ? '#0E0E0E' : '#F6F6F6' }}
-    >
+    <SafeAreaView edges={['top']} style={{ backgroundColor: theme.background }}>
       <StatusBar
         barStyle={isDark ? 'light-content' : 'dark-content'}
-        backgroundColor={isDark ? '#0E0E0E' : '#F6F6F6'}
+        backgroundColor={theme.background}
       />
 
       <View style={styles.container}>
@@ -97,7 +105,7 @@ const Header = ({
               <Ionicons
                 name="arrow-back"
                 size={width * 0.07}
-                color={isDark ? '#fff' : '#000'}
+                color={theme.textPrimary}
               />
             </TouchableOpacity>
           )}
@@ -105,13 +113,17 @@ const Header = ({
           <View style={{ marginLeft: 8 }}>
             {showGreeting ? (
               <>
-                <Text style={styles.haiText}>Hai,</Text>
-                <Text style={styles.nameText}>
+                <Text style={[styles.haiText, { color: theme.textSecondary }]}>
+                  Hai,
+                </Text>
+                <Text style={[styles.nameText, { color: theme.textPrimary }]}>
                   {capitalizeWords(user?.nama)}
                 </Text>
               </>
             ) : title ? (
-              <Text style={styles.titleText}>{title}</Text>
+              <Text style={[styles.titleText, { color: theme.textPrimary }]}>
+                {title}
+              </Text>
             ) : null}
           </View>
         </View>
@@ -123,7 +135,7 @@ const Header = ({
               <Ionicons
                 name="notifications-outline"
                 size={width * 0.07}
-                color={isDark ? '#fff' : '#000'}
+                color={theme.textPrimary}
               />
               {notificationCount > 0 && (
                 <View style={styles.badge}>
@@ -133,13 +145,18 @@ const Header = ({
             </TouchableOpacity>
           )}
 
-          <TouchableOpacity onPress={() => setMenuVisible(true)}>
-            <View
-              style={[styles.profileCircle, { backgroundColor: profileColor }]}
-            >
-              <Text style={styles.profileText}>{getInitial(user?.nama)}</Text>
-            </View>
-          </TouchableOpacity>
+          {showProfileInitial && (
+            <TouchableOpacity onPress={() => setMenuVisible(true)}>
+              <View
+                style={[
+                  styles.profileCircle,
+                  { backgroundColor: profileColor },
+                ]}
+              >
+                <Text style={styles.profileText}>{getInitial(user?.nama)}</Text>
+              </View>
+            </TouchableOpacity>
+          )}
         </View>
       </View>
 
@@ -150,22 +167,31 @@ const Header = ({
           activeOpacity={1}
           onPress={() => setMenuVisible(false)}
         >
-          <View
-            style={[
-              styles.menuBox,
-              { backgroundColor: isDark ? '#1A1A1A' : '#FFF' },
-            ]}
-          >
-            <TouchableOpacity style={styles.menuItem}>
-              <Ionicons name="person-outline" size={20} />
-              <Text style={styles.menuText}>Profil</Text>
+          <View style={[styles.menuBox, { backgroundColor: theme.card }]}>
+            <TouchableOpacity
+              style={styles.menuItem}
+              onPress={() => {
+                setMenuVisible(false);
+                navigation.navigate('Profile');
+              }}
+            >
+              <Ionicons
+                name="person-outline"
+                size={20}
+                color={theme.textPrimary}
+              />
+              <Text style={[styles.menuText, { color: theme.textPrimary }]}>
+                Profile
+              </Text>
             </TouchableOpacity>
 
-            <View style={styles.menuDivider} />
+            <View
+              style={[styles.menuDivider, { backgroundColor: theme.divider }]}
+            />
 
             <TouchableOpacity onPress={handleLogout} style={styles.menuItem}>
-              <Ionicons name="log-out-outline" size={20} color="#D32F2F" />
-              <Text style={[styles.menuText, { color: '#D32F2F' }]}>
+              <Ionicons name="log-out-outline" size={20} color={theme.danger} />
+              <Text style={[styles.menuText, { color: theme.danger }]}>
                 Logout
               </Text>
             </TouchableOpacity>
@@ -178,7 +204,7 @@ const Header = ({
 
 export default Header;
 
-/* ================= STYLE ================= */
+/* ================= STYLE (LAYOUT ONLY) ================= */
 const styles = StyleSheet.create({
   container: {
     height: 64,
@@ -199,7 +225,7 @@ const styles = StyleSheet.create({
   },
   iconButton: { padding: 6 },
 
-  haiText: { fontSize: 12, color: '#888' },
+  haiText: { fontSize: 12 },
   nameText: { fontSize: 18, fontWeight: 'bold' },
   titleText: { fontSize: 18, fontWeight: 'bold' },
 
@@ -210,7 +236,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  profileText: { color: '#fff', fontWeight: 'bold' },
+  profileText: {
+    color: '#fff',
+    fontWeight: 'bold',
+  },
 
   badge: {
     position: 'absolute',
@@ -220,7 +249,10 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     paddingHorizontal: 5,
   },
-  badgeText: { color: '#fff', fontSize: 10 },
+  badgeText: {
+    color: '#fff',
+    fontSize: 10,
+  },
 
   overlay: {
     flex: 1,
@@ -241,5 +273,5 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   menuText: { fontSize: 14 },
-  menuDivider: { height: 1, backgroundColor: '#ddd' },
+  menuDivider: { height: 1 },
 });

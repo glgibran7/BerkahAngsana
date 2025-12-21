@@ -108,7 +108,7 @@ const HistoryScreen = () => {
 
   return (
     <>
-      <Header title="History" showBack={false} />
+      <Header title="History" showBack={false} showGreeting={false} />
 
       <ScrollView
         style={[styles.container, { backgroundColor: theme.background }]}

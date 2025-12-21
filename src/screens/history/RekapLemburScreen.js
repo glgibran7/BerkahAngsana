@@ -112,6 +112,7 @@ const RekapLemburScreen = ({ navigation }) => {
         title="Rekapan Lembur"
         showNotification={false}
         showGreeting={false}
+        showProfileInitial={false}
         showBack
         onBack={() => navigation.goBack()}
       />

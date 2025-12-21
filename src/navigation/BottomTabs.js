@@ -6,7 +6,7 @@ import { useColorScheme } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import MainStack from '../navigation/MainStack';
-import AbsensiScreen from '../screens/Home';
+import AbsensiScreen from '../screens/AbsensiScreen';
 import HistoryStack from '../navigation/HistoryStack';
 
 const Tab = createBottomTabNavigator();

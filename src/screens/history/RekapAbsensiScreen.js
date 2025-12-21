@@ -137,6 +137,7 @@ const RekapAbsensiScreen = ({ navigation }) => {
         showGreeting={false}
         showNotification={false}
         showBack
+        showProfileInitial={false}
         onBack={() => navigation.goBack()}
       />
 

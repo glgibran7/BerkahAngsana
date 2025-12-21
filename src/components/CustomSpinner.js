@@ -53,9 +53,9 @@ const styles = StyleSheet.create({
     height: 60,
     borderWidth: 6,
     borderRadius: 30,
-    borderTopColor: '#00BFFF', // 🔵 warna biru
+    borderTopColor: '#8B1E1E',
     borderRightColor: 'transparent',
-    borderBottomColor: '#00BFFF',
+    borderBottomColor: '#8B1E1E',
     borderLeftColor: 'transparent',
   },
 });
