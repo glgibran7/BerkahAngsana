@@ -60,6 +60,7 @@ const HistoryScreen = () => {
     primary: '#8B1E1E',
     success: '#4CAF50',
     warning: '#FB8C00',
+    iconPrimary: isDark ? '#ffffffff' : '#D32F2F',
   };
   // console.log('REQUEST:', {
   //   id_karyawan,
@@ -108,7 +109,12 @@ const HistoryScreen = () => {
 
   return (
     <>
-      <Header title="History" showBack={false} showGreeting={false} />
+      <Header
+        title="History"
+        showBack={false}
+        showGreeting={false}
+        showNotification={false}
+      />
 
       <ScrollView
         style={[styles.container, { backgroundColor: theme.background }]}
@@ -129,7 +135,7 @@ const HistoryScreen = () => {
               <Ionicons
                 name="calendar-outline"
                 size={18}
-                color={theme.primary}
+                color={theme.iconPrimary}
               />
               <Text style={[styles.dateText, { color: theme.textPrimary }]}>
                 {formatDate(selectedDate)}
@@ -217,7 +223,7 @@ const HistoryScreen = () => {
           <Ionicons
             name="document-text-outline"
             size={22}
-            color={theme.primary}
+            color={theme.iconPrimary}
           />
           <Text style={[styles.menuText, { color: theme.textPrimary }]}>
             Rekapan Absensi
@@ -233,7 +239,7 @@ const HistoryScreen = () => {
           style={[styles.menuRow, { backgroundColor: theme.card }]}
           onPress={() => navigation.navigate('RekapIzinSakit')}
         >
-          <Ionicons name="medkit-outline" size={22} color={theme.primary} />
+          <Ionicons name="medkit-outline" size={22} color={theme.iconPrimary} />
           <Text style={[styles.menuText, { color: theme.textPrimary }]}>
             Rekapan Izin / Sakit
           </Text>
@@ -248,7 +254,11 @@ const HistoryScreen = () => {
           style={[styles.menuRow, { backgroundColor: theme.card }]}
           onPress={() => navigation.navigate('RekapLembur')}
         >
-          <Ionicons name="hourglass-outline" size={22} color={theme.primary} />
+          <Ionicons
+            name="hourglass-outline"
+            size={22}
+            color={theme.iconPrimary}
+          />
           <Text style={[styles.menuText, { color: theme.textPrimary }]}>
             Rekapan Lembur
           </Text>

@@ -306,7 +306,7 @@ const HomeScreen = () => {
         {/* MASUK */}
         <View style={[styles.presensiCard, { backgroundColor: theme.card }]}>
           <View style={styles.presensiHeader}>
-            <Text style={styles.presensiDate}>
+            <Text style={[styles.presensiDate, { color: theme.textPrimary }]}>
               {today.dayName}, {today.fullDate}
             </Text>
             <Text style={[styles.presensiLabel, { color: theme.textPrimary }]}>
@@ -332,7 +332,7 @@ const HomeScreen = () => {
         {/* KELUAR */}
         <View style={[styles.presensiCard, { backgroundColor: theme.card }]}>
           <View style={styles.presensiHeader}>
-            <Text style={styles.presensiDate}>
+            <Text style={[styles.presensiDate, { color: theme.textPrimary }]}>
               {today.dayName}, {today.fullDate}
             </Text>
 

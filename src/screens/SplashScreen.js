@@ -11,16 +11,16 @@ import {
 import { useNavigation } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import CustomSpinner from '../components/CustomSpinner';
-import logo from '../image/logo_berkah_large.png';
+
+import logoLight from '../image/logo_berkah_large.png';
+import logoDark from '../image/logo_white.png';
 
 const { width } = Dimensions.get('window');
-
-const LOGO_SIZE = width * 0.55;
+const LOGO_WIDTH = width * 0.65;
 
 const SplashScreen = () => {
   const navigation = useNavigation();
-  const colorScheme = useColorScheme();
-  const isDark = colorScheme === 'dark';
+  const isDark = useColorScheme() === 'dark';
 
   useEffect(() => {
     const checkLogin = async () => {
@@ -48,23 +48,20 @@ const SplashScreen = () => {
     <View
       style={[
         styles.container,
-        { backgroundColor: isDark ? '#0F172A' : '#FFFFFF' },
+        { backgroundColor: isDark ? '#0E0E0E' : '#FFFFFF' },
       ]}
     >
       <StatusBar hidden barStyle={isDark ? 'light-content' : 'dark-content'} />
 
-      {/* Logo bulat */}
-      <View
-        style={[
-          styles.logoWrapper,
-          { backgroundColor: isDark ? '#1E293B' : '#F1F5F9' },
-        ]}
-      >
-        <Image source={logo} style={styles.logo} resizeMode="contain" />
-      </View>
+      {/* LOGO */}
+      <Image
+        source={isDark ? logoDark : logoLight}
+        style={styles.logo}
+        resizeMode="contain"
+      />
 
-      {/* Text nama */}
-      <Text style={[styles.appName, { color: isDark ? '#F8FAFC' : '#0F172A' }]}>
+      {/* APP NAME */}
+      <Text style={[styles.appName, { color: isDark ? '#FFFFFF' : '#0F172A' }]}>
         Berkah Angsana
       </Text>
 
@@ -73,6 +70,9 @@ const SplashScreen = () => {
   );
 };
 
+export default SplashScreen;
+
+/* ================= STYLE ================= */
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -80,23 +80,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
 
-  logoWrapper: {
-    width: LOGO_SIZE,
-    height: LOGO_SIZE,
-    borderRadius: LOGO_SIZE / 2,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 16,
-    elevation: 6,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.15,
-    shadowRadius: 8,
-  },
-
   logo: {
-    width: '70%',
-    height: '70%',
+    width: LOGO_WIDTH,
+    height: LOGO_WIDTH * 0.5,
+    marginBottom: 20,
   },
 
   appName: {
@@ -106,5 +93,3 @@ const styles = StyleSheet.create({
     letterSpacing: 0.5,
   },
 });
-
-export default SplashScreen;
