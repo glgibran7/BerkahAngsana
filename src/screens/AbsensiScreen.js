@@ -23,10 +23,7 @@ const AbsensiScreen = () => {
   const [photo, setPhoto] = useState(null);
   const [location, setLocation] = useState(null);
   const [loadingLocation, setLoadingLocation] = useState(true);
-
-  // 🔑 STATUS ABSENSI
   const [statusAbsen, setStatusAbsen] = useState('IN');
-  // IN = belum check-in | OUT = sudah check-in
 
   const theme = {
     background: isDark ? '#0E0E0E' : '#F4F4F4',
@@ -45,7 +42,7 @@ const AbsensiScreen = () => {
     return granted === PermissionsAndroid.RESULTS.GRANTED;
   };
 
-  /* ================= AUTO LOCATION ================= */
+  /* ================= LOCATION ================= */
 
   useEffect(() => {
     const initLocation = async () => {
@@ -70,14 +67,14 @@ const AbsensiScreen = () => {
           Alert.alert('Error', 'Gagal mengambil lokasi');
           setLoadingLocation(false);
         },
-        { enableHighAccuracy: true, timeout: 15000 },
+        { enableHighAccuracy: true, timeout: 20000 },
       );
     };
 
     initLocation();
   }, []);
 
-  /* ================= FOTO ================= */
+  /* ================= CAMERA ================= */
 
   const takePhoto = async () => {
     const allowed = await requestPermission(
@@ -91,13 +88,12 @@ const AbsensiScreen = () => {
     const res = await launchCamera({
       cameraType: 'front',
       mediaType: 'photo',
+      quality: 0.7,
+      maxWidth: 1024,
+      maxHeight: 1024,
     });
 
-    if (res.didCancel) return;
-    if (res.errorCode) {
-      Alert.alert('Error', 'Gagal membuka kamera');
-      return;
-    }
+    if (res.didCancel || res.errorCode) return;
 
     const asset = res.assets?.[0];
     if (asset) {
@@ -109,7 +105,7 @@ const AbsensiScreen = () => {
     }
   };
 
-  /* ================= SUBMIT (IN / OUT) ================= */
+  /* ================= SUBMIT ================= */
 
   const handleSubmit = async () => {
     if (!photo || !location) {
@@ -120,48 +116,35 @@ const AbsensiScreen = () => {
     try {
       setLoading(true);
 
-      const idKaryawan = 1;
-
       const formData = new FormData();
-      formData.append('file', photo);
+      formData.append('foto', {
+        uri: photo.uri,
+        name: photo.name,
+        type: photo.type,
+      });
+      formData.append('latitude', String(location.latitude));
+      formData.append('longitude', String(location.longitude));
 
-      const isCheckIn = statusAbsen === 'IN';
+      const url =
+        statusAbsen === 'IN' ? '/absensi/check-in' : '/absensi/check-out';
 
-      const url = isCheckIn
-        ? `/absensi/check-in/${idKaryawan}`
-        : `/absensi/check-out/${idKaryawan}`;
+      console.log('ABSENSI URL:', url);
 
-      const method = isCheckIn ? 'post' : 'put';
+      await Api.post(url, formData);
 
-      await Api[method](
-        `${url}?latitude=${location.latitude}&longitude=${location.longitude}`,
-        formData,
-        { headers: { 'Content-Type': 'multipart/form-data' } },
-      );
-
-      // ✅ 200
       Alert.alert(
         'Berhasil',
-        isCheckIn ? 'Check-in berhasil' : 'Check-out berhasil',
+        statusAbsen === 'IN' ? 'Check-in berhasil' : 'Check-out berhasil',
       );
 
       setPhoto(null);
-      setStatusAbsen(isCheckIn ? 'OUT' : 'IN');
+      setStatusAbsen(statusAbsen === 'IN' ? 'OUT' : 'IN');
     } catch (err) {
-      const status = err?.response?.status;
-
-      if (status === 400) {
-        Alert.alert('Gagal', 'Data tidak lengkap atau tidak valid');
-      } else if (status === 403) {
-        Alert.alert(
-          'Akses Ditolak',
-          'Anda berada di luar lokasi kerja atau wajah tidak cocok',
-        );
-      } else {
-        Alert.alert('Error', 'Terjadi kesalahan pada sistem');
-      }
-
-      console.log('Absensi error:', err?.response?.data || err);
+      console.log('ABSENSI ERROR:', err?.response?.data || err);
+      Alert.alert(
+        'Error',
+        err?.response?.data?.message || 'Gagal mengirim absensi',
+      );
     } finally {
       setLoading(false);
     }
@@ -184,7 +167,6 @@ const AbsensiScreen = () => {
           {isCheckIn ? 'Check-In' : 'Check-Out'}
         </Text>
 
-        {/* FOTO */}
         <TouchableOpacity style={styles.photoBox} onPress={takePhoto}>
           {photo ? (
             <Image source={{ uri: photo.uri }} style={styles.photo} />
@@ -193,7 +175,6 @@ const AbsensiScreen = () => {
           )}
         </TouchableOpacity>
 
-        {/* LOKASI */}
         <View style={styles.locationRow}>
           {loadingLocation ? (
             <ActivityIndicator size="small" />
@@ -209,13 +190,12 @@ const AbsensiScreen = () => {
           </Text>
         </View>
 
-        {/* BUTTON */}
         <TouchableOpacity
           style={[
             styles.btnPrimary,
             {
               backgroundColor: isCheckIn ? theme.primary : theme.success,
-              opacity: photo && location ? 1 : 0.5,
+              opacity: photo && location && !loading ? 1 : 0.5,
             },
           ]}
           disabled={!photo || !location || loading}

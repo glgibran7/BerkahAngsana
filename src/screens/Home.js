@@ -160,7 +160,7 @@ const HomeScreen = () => {
 
   return (
     <>
-      <Header showBack={false} />
+      <Header showBack={false} showNotification showProfileInitial />
 
       <ScrollView
         style={[styles.container, { backgroundColor: theme.background }]}

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -6,19 +6,20 @@ import {
   TouchableOpacity,
   useColorScheme,
   ScrollView,
-  Alert,
   TextInput,
+  Modal,
+  Pressable,
 } from 'react-native';
 import Header from '../../components/Header';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import Ionicons from '@react-native-vector-icons/ionicons';
-import { launchImageLibrary } from 'react-native-image-picker';
+import { launchCamera, launchImageLibrary } from 'react-native-image-picker';
 import Api from '../../utils/Api';
 import { useGlobal } from '../../context/GlobalContext';
 
 const IzinScreen = ({ navigation }) => {
   const isDark = useColorScheme() === 'dark';
-  const { showLoading, hideLoading, showToast } = useGlobal();
+  const { showLoading, hideLoading, showToast, user } = useGlobal();
 
   const [tglMulai, setTglMulai] = useState(null);
   const [tglSelesai, setTglSelesai] = useState(null);
@@ -26,6 +27,9 @@ const IzinScreen = ({ navigation }) => {
   const [showSelesaiPicker, setShowSelesaiPicker] = useState(false);
   const [keterangan, setKeterangan] = useState('');
   const [file, setFile] = useState(null);
+  const [showPickerModal, setShowPickerModal] = useState(false);
+
+  const [riwayat, setRiwayat] = useState([]);
 
   const theme = {
     background: isDark ? '#0E0E0E' : '#F6F6F6',
@@ -36,6 +40,7 @@ const IzinScreen = ({ navigation }) => {
     primary: '#8B1E1E',
   };
 
+  /* ================= UTIL ================= */
   const formatDDMMYYYY = date => {
     const d = String(date.getDate()).padStart(2, '0');
     const m = String(date.getMonth() + 1).padStart(2, '0');
@@ -43,7 +48,54 @@ const IzinScreen = ({ navigation }) => {
     return `${d}-${m}-${y}`;
   };
 
-  const pickFile = async () => {
+  /* ================= GET RIWAYAT (NO SPINNER) ================= */
+  const fetchRiwayat = async () => {
+    try {
+      const res = await Api.get('/izin/saya');
+      const data = res.data?.data || [];
+
+      const filtered = data.filter(
+        item => item.id_karyawan === user?.id_karyawan,
+      );
+
+      setRiwayat(filtered);
+    } catch (err) {
+      console.log('ERROR RIWAYAT:', err?.response?.data || err);
+      showToast('Gagal', 'Gagal mengambil riwayat izin', 'error');
+    }
+  };
+
+  useEffect(() => {
+    fetchRiwayat();
+  }, []);
+
+  /* ================= CAMERA ================= */
+  const openCamera = async () => {
+    setShowPickerModal(false);
+
+    const res = await launchCamera({
+      mediaType: 'photo',
+      cameraType: 'back',
+      saveToPhotos: true,
+      quality: 0.8,
+    });
+
+    if (res.didCancel) return;
+
+    const asset = res.assets?.[0];
+    if (!asset) return;
+
+    setFile({
+      uri: asset.uri,
+      name: asset.fileName || `kamera_${Date.now()}.jpg`,
+      type: asset.type || 'image/jpeg',
+    });
+  };
+
+  /* ================= GALLERY ================= */
+  const openGallery = async () => {
+    setShowPickerModal(false);
+
     const res = await launchImageLibrary({
       mediaType: 'mixed',
       selectionLimit: 1,
@@ -61,19 +113,18 @@ const IzinScreen = ({ navigation }) => {
     });
   };
 
+  /* ================= SUBMIT ================= */
   const handleSubmit = async () => {
     if (!tglMulai || !tglSelesai) {
-      showToast('Validasi gagal', 'Tanggal wajib diisi', 'error');
+      showToast('Validasi', 'Tanggal wajib diisi', 'error');
       return;
     }
 
     try {
-      showLoading(); // 🔥 spinner global (tengah layar)
+      showLoading();
 
       const formData = new FormData();
-
-      // ⚠️ JANGAN DIUBAH
-      formData.append('id_jenis', '3'); // STRING
+      formData.append('id_jenis', 3); // INTEGER
       formData.append('tgl_mulai', formatDDMMYYYY(tglMulai));
       formData.append('tgl_selesai', formatDDMMYYYY(tglSelesai));
       formData.append('keterangan', keterangan || '-');
@@ -87,22 +138,26 @@ const IzinScreen = ({ navigation }) => {
       }
 
       await Api.post('/perizinan', formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
+        headers: { 'Content-Type': 'multipart/form-data' },
       });
 
       showToast('Berhasil', 'Pengajuan izin berhasil', 'success');
-      navigation.goBack();
+
+      setTglMulai(null);
+      setTglSelesai(null);
+      setKeterangan('');
+      setFile(null);
+
+      fetchRiwayat();
     } catch (err) {
-      console.log('ERROR API:', err?.response?.data || err);
+      console.log('ERROR SUBMIT:', err?.response?.data || err);
       showToast(
         'Gagal',
         err?.response?.data?.message || 'Terjadi kesalahan',
         'error',
       );
     } finally {
-      hideLoading(); // 🔥 spinner hilang
+      hideLoading();
     }
   };
 
@@ -120,6 +175,7 @@ const IzinScreen = ({ navigation }) => {
         style={{ flex: 1, backgroundColor: theme.background }}
         contentContainerStyle={{ padding: 16 }}
       >
+        {/* ================= FORM ================= */}
         <View style={[styles.card, { backgroundColor: theme.card }]}>
           <Text style={[styles.label, { color: theme.textPrimary }]}>
             Tanggal Mulai
@@ -173,7 +229,7 @@ const IzinScreen = ({ navigation }) => {
           </Text>
           <TouchableOpacity
             style={[styles.fileBox, { borderColor: theme.border }]}
-            onPress={pickFile}
+            onPress={() => setShowPickerModal(true)}
           >
             <Ionicons
               name="attach-outline"
@@ -181,7 +237,7 @@ const IzinScreen = ({ navigation }) => {
               color={theme.textSecondary}
             />
             <Text style={{ marginLeft: 8, color: theme.textSecondary }}>
-              {file?.name || 'Upload file'}
+              {file?.name || 'Upload file / Foto'}
             </Text>
           </TouchableOpacity>
 
@@ -192,8 +248,29 @@ const IzinScreen = ({ navigation }) => {
             <Text style={styles.buttonText}>Ajukan Izin</Text>
           </TouchableOpacity>
         </View>
+
+        {/* ================= MENU RIWAYAT ================= */}
+        <Text style={[styles.sectionTitle, { color: theme.textPrimary }]}>
+          Riwayat
+        </Text>
+
+        <TouchableOpacity
+          style={[styles.menuRow, { backgroundColor: theme.card }]}
+          onPress={() => navigation.navigate('RiwayatIzin')}
+        >
+          <Ionicons name="time-outline" size={22} color={theme.primary} />
+          <Text style={[styles.menuText, { color: theme.textPrimary }]}>
+            Riwayat Perizinan
+          </Text>
+          <Ionicons
+            name="chevron-forward"
+            size={20}
+            color={theme.textSecondary}
+          />
+        </TouchableOpacity>
       </ScrollView>
 
+      {/* ================= DATE PICKER ================= */}
       {showMulaiPicker && (
         <DateTimePicker
           value={tglMulai || new Date()}
@@ -215,12 +292,47 @@ const IzinScreen = ({ navigation }) => {
           }}
         />
       )}
+
+      {/* ================= CUSTOM FILE PICKER ================= */}
+      <Modal
+        visible={showPickerModal}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setShowPickerModal(false)}
+      >
+        <Pressable
+          style={styles.modalOverlay}
+          onPress={() => setShowPickerModal(false)}
+        >
+          <View style={[styles.modalContent, { backgroundColor: theme.card }]}>
+            <TouchableOpacity style={styles.modalItem} onPress={openCamera}>
+              <Ionicons name="camera-outline" size={20} color={theme.primary} />
+              <Text style={styles.modalText}>Ambil Foto</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity style={styles.modalItem} onPress={openGallery}>
+              <Ionicons name="image-outline" size={20} color={theme.primary} />
+              <Text style={styles.modalText}>Pilih dari Galeri</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[styles.modalItem, { justifyContent: 'center' }]}
+              onPress={() => setShowPickerModal(false)}
+            >
+              <Text style={[styles.modalText, { color: '#E53935' }]}>
+                Batal
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </Pressable>
+      </Modal>
     </>
   );
 };
 
 export default IzinScreen;
 
+/* ================= STYLE ================= */
 const styles = StyleSheet.create({
   card: { borderRadius: 14, padding: 16, elevation: 2 },
   label: { fontSize: 13, fontWeight: '600', marginBottom: 6 },
@@ -253,4 +365,52 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   buttonText: { color: '#FFF', fontWeight: '700', fontSize: 14 },
+
+  sectionTitle: {
+    marginTop: 24,
+    marginBottom: 8,
+    fontSize: 16,
+    fontWeight: '700',
+  },
+
+  menuRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+    borderRadius: 14,
+    marginBottom: 10,
+    elevation: 1,
+  },
+
+  menuText: {
+    flex: 1,
+    marginLeft: 12,
+    fontSize: 14,
+    fontWeight: '600',
+  },
+
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.4)',
+    justifyContent: 'flex-end',
+  },
+
+  modalContent: {
+    padding: 16,
+    borderTopLeftRadius: 16,
+    borderTopRightRadius: 16,
+  },
+
+  modalItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 14,
+  },
+
+  modalText: {
+    marginLeft: 12,
+    fontSize: 14,
+    fontWeight: '600',
+  },
 });

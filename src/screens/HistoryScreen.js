@@ -113,7 +113,8 @@ const HistoryScreen = () => {
         title="History"
         showBack={false}
         showGreeting={false}
-        showNotification={false}
+        showNotification
+        showProfileInitial
       />
 
       <ScrollView

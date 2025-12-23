@@ -6,6 +6,7 @@ import SakitScreen from '../screens/main/SakitScreen';
 import CutiScreen from '../screens/CutiScreen';
 import LemburScreen from '../screens/main/LemburScreen';
 import ProfileScreen from '../screens/ProfileScreen';
+import RiwayatIzin from '../screens/main/RiwayatIzinScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -18,6 +19,7 @@ const MainStack = () => {
       <Stack.Screen name="Cuti" component={CutiScreen} />
       <Stack.Screen name="Lembur" component={LemburScreen} />
       <Stack.Screen name="Profile" component={ProfileScreen} />
+      <Stack.Screen name="RiwayatIzin" component={RiwayatIzin} />
     </Stack.Navigator>
   );
 };

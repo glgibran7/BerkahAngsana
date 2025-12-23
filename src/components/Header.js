@@ -58,8 +58,8 @@ const Header = ({
   onBack,
   showBack = true,
   showGreeting = true,
-  showNotification = true,
-  showProfileInitial = true,
+  showNotification = false,
+  showProfileInitial = false,
   notificationCount = 0,
   onNotificationPress,
 }) => {
@@ -79,8 +79,8 @@ const Header = ({
   };
 
   const profileColor = useMemo(
-    () => getColorFromName(user?.nama || 'user'),
-    [user?.nama],
+    () => getColorFromName(user?.nama_lengkap || 'user'),
+    [user?.nama_lengkap],
   );
 
   const handleLogout = async () => {
@@ -117,7 +117,7 @@ const Header = ({
                   Hai,
                 </Text>
                 <Text style={[styles.nameText, { color: theme.textPrimary }]}>
-                  {capitalizeWords(user?.nama)}
+                  {capitalizeWords(user?.nama_lengkap)}
                 </Text>
               </>
             ) : title ? (
@@ -153,7 +153,9 @@ const Header = ({
                   { backgroundColor: profileColor },
                 ]}
               >
-                <Text style={styles.profileText}>{getInitial(user?.nama)}</Text>
+                <Text style={styles.profileText}>
+                  {getInitial(user?.nama_lengkap)}
+                </Text>
               </View>
             </TouchableOpacity>
           )}
