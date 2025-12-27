@@ -87,7 +87,7 @@ const LoginScreen = () => {
     showLoading();
 
     try {
-      const response = await Api.post('/auth/login/karyawan', {
+      const response = await Api.post('/auth/pegawai/login', {
         username,
         password,
       });
@@ -96,17 +96,21 @@ const LoginScreen = () => {
 
       const data = response.data;
 
-      if (data?.access_token) {
-        // Simpan token dan id_karyawan ke AsyncStorage
-        await AsyncStorage.setItem('token', data.access_token);
-        await AsyncStorage.setItem('user', JSON.stringify(data));
+      if (data?.success && data.data?.access_token) {
+        // Simpan token dan data user di AsyncStorage
+        await AsyncStorage.setItem('token', data.data.access_token);
+        await AsyncStorage.setItem('refresh_token', data.data.refresh_token);
+        await AsyncStorage.setItem('user', JSON.stringify(data.data.pegawai));
 
-        // Simpan id_karyawan secara terpisah juga jika perlu
-        if (data.id_karyawan) {
-          await AsyncStorage.setItem('id_karyawan', String(data.id_karyawan));
+        // Simpan id_pegawai secara terpisah jika diperlukan
+        if (data.data.pegawai?.id_pegawai) {
+          await AsyncStorage.setItem(
+            'id_pegawai',
+            String(data.data.pegawai.id_pegawai),
+          );
         }
 
-        setUser(data);
+        setUser(data.data.pegawai);
 
         // Remember me
         if (rememberMe) {
@@ -120,13 +124,18 @@ const LoginScreen = () => {
         }
 
         hideLoading();
-        const namaCapitalize = capitalizeName(data.nama);
+
+        const namaCapitalize = capitalizeName(data.data.pegawai.nama_lengkap);
 
         showToast('Selamat datang kembali', `${namaCapitalize} 👋`, 'success');
         navigation.replace('MainTabs');
       } else {
         hideLoading();
-        showToast('Login gagal', 'Token tidak ditemukan', 'error');
+        showToast(
+          'Login gagal',
+          data.message || 'Token tidak ditemukan',
+          'error',
+        );
       }
     } catch (error) {
       hideLoading();
@@ -157,6 +166,12 @@ const LoginScreen = () => {
           ]}
           resizeMode="contain"
         />
+
+        <Text
+          style={[styles.appName, { color: isDark ? '#FFFFFF' : '#0F172A' }]}
+        >
+          Berkah Angsana
+        </Text>
 
         {/* Input username */}
         <TextInput
@@ -253,6 +268,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: 20,
   },
+  appName: {
+    fontSize: 26,
+    fontWeight: '700',
+    marginBottom: 20,
+    letterSpacing: 0.5,
+  },
+
   logo: {
     marginBottom: 20,
     alignSelf: 'center',

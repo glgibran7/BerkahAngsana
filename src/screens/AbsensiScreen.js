@@ -15,6 +15,7 @@ import Ionicons from '@react-native-vector-icons/ionicons';
 import { launchCamera } from 'react-native-image-picker';
 import Geolocation from '@react-native-community/geolocation';
 import Api from '../utils/Api';
+import ApiUpload from '../utils/ApiUpload';
 
 const AbsensiScreen = () => {
   const isDark = useColorScheme() === 'dark';
@@ -97,9 +98,14 @@ const AbsensiScreen = () => {
 
     const asset = res.assets?.[0];
     if (asset) {
+      const uri =
+        Platform.OS === 'android' && !asset.uri.startsWith('file://')
+          ? `file://${asset.uri}`
+          : asset.uri;
+
       setPhoto({
-        uri: asset.uri,
-        name: asset.fileName || 'selfie.jpg',
+        uri,
+        name: asset.fileName || `selfie_${Date.now()}.jpg`,
         type: asset.type || 'image/jpeg',
       });
     }
@@ -129,8 +135,15 @@ const AbsensiScreen = () => {
         statusAbsen === 'IN' ? '/absensi/check-in' : '/absensi/check-out';
 
       console.log('ABSENSI URL:', url);
+      console.log('FORMDATA:', {
+        uri: photo.uri,
+        type: photo.type,
+        name: photo.name,
+        lat: location.latitude,
+        lng: location.longitude,
+      });
 
-      await Api.post(url, formData);
+      await ApiUpload.post(url, formData);
 
       Alert.alert(
         'Berhasil',
